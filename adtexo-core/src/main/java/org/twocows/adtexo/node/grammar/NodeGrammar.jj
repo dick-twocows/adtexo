@@ -1,0 +1,88 @@
+/**
+ * JavaCC template file created by SF JavaCC plugin 1.5.28+ wizard for JavaCC 1.5.0+
+ */options{  static = false;}PARSER_BEGIN(NodeGrammar)package org.twocows.adtexo.node.grammar;
+
+import java.io.StringReader;
+
+import org.twocows.adtexo.context.Context;
+import org.twocows.adtexo.grammar.Grammar;
+import org.twocows.adtexo.node.Node;
+
+public class NodeGrammar implements Grammar{
+	public NodeGrammar() {
+	  this(new StringReader(""));
+	}
+}PARSER_END(NodeGrammar)SKIP :{  " "| "\r"| "\t"| "\n"}
+TOKEN :
+{
+  < SHOW : "show" >
+| < START : "start" >
+| < STOP : "stop" >
+}
+
+TOKEN :
+{
+  < INTEGER : ( < DIGIT > )+ >
+| < #DIGIT : [ "0"-"9" ] >
+| < DOUBLE_QUOTED_STRING: "\"" (~["\""])+ "\"" >
+}
+
+Context root() :
+{
+	Context context;
+	Token id, token;
+}
+{
+	(
+		(
+			context = show()
+		)
+		|
+		(
+			context = start()
+		)
+		|
+		(
+			context = stop()
+		)
+	)
+	{
+		return context;
+	}
+}
+
+Context show() :
+{
+	final Context context = new Context();
+}
+{
+	< SHOW >
+	{
+		context.put(Grammar.ROOT_KEY, Node.SHOW_KEY);
+		return context;
+	}
+}
+
+Context start() :
+{
+	final Context context = new Context();
+}
+{
+	< START >
+	{
+		context.put(Grammar.ROOT_KEY, Node.START_KEY);
+		return context;
+	}
+}
+
+Context stop() :
+{
+	final Context context = new Context();
+}
+{
+	< STOP >
+	{
+		context.put(Grammar.ROOT_KEY, Node.STOP_KEY);
+		return context;
+	}
+}

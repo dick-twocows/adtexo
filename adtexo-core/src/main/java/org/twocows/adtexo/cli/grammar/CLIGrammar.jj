@@ -1,0 +1,109 @@
+/**
+ * JavaCC template file created by SF JavaCC plugin 1.5.28+ wizard for JavaCC 1.5.0+
+ */options{  static = false;}PARSER_BEGIN(CLIGrammar)package org.twocows.adtexo.cli.grammar;
+
+import java.io.StringReader;
+
+import org.twocows.adtexo.context.Context;
+import org.twocows.adtexo.cli.CLI;
+import org.twocows.adtexo.grammar.Grammar;
+import org.twocows.adtexo.node.adtexo.AdtexoNode;
+import org.twocows.adtexo.node.Node;
+
+public class CLIGrammar implements Grammar{
+	public CLIGrammar() {
+	  this(new StringReader(""));
+	}
+}PARSER_END(CLIGrammar)SKIP :{  " "| "\r"| "\t"| "\n"}
+TOKEN :
+{
+  < ADTEXO : "adtexo" >
+| < CREATE : "create" >
+| < ID : "id" >
+| < SHUTDOWN : "shutdown" >
+| < SHOW : "show" >
+| < START : "start" >
+}
+
+TOKEN :
+{
+  < INTEGER : ( < DIGIT > )+ >
+| < #DIGIT : [ "0"-"9" ] >
+| < DOUBLE_QUOTED_STRING: "\"" (~["\""])+ "\"" >
+| < ID_STRING : ["a"-"z","A"-"Z"] ( ["a"-"z","A"-"Z","_","0"-"9"] )* > : ADTEXO_CONTEXT
+}
+
+< ADTEXO_CONTEXT > TOKEN :
+{
+  < CONSUME_ALL : ( ~[] )+ >
+}
+
+Context root() :
+{
+	Context context;
+	Token id, token;
+}
+{
+	(
+		context = create()		|
+		context = show()
+		|
+		context = shutdown()
+		|
+		(
+			id = < ID_STRING > token = < CONSUME_ALL >
+			{
+				context = new Context();
+				context.put(Grammar.ROOT_KEY, AdtexoNode.KEY_PREFIX);
+				context.put(Node.ID_KEY, id.image); 
+				context.put(Grammar.TEXT_KEY, token.image);
+			} 		) 
+	)
+	{
+		return context;
+	}
+}
+
+Context create() :
+{
+	final Context context = new Context();
+	Token token;
+}
+{
+	< CREATE > < ADTEXO >
+	{
+		context.put(Grammar.ROOT_KEY, CLI.CREATE_ADTEXO_KEY);
+	}
+	< ID > token = < DOUBLE_QUOTED_STRING >
+	{
+		context.put(Node.ID_KEY, token.image.replace("\"", ""));	
+	}
+	{
+		return context;
+	}
+}
+
+Context show() :
+{
+	final Context context = new Context();
+}
+{
+	< SHOW >
+	{
+		context.put(Grammar.ROOT_KEY, CLI.SHOW_KEY);
+		return context;
+	}
+}
+
+Context shutdown() :
+{
+	final Context context = new Context();
+	Token token;
+}
+{
+	< SHUTDOWN >
+	{
+		context.put(Grammar.ROOT_KEY, CLI.SHUTDOWN_KEY);
+		return context;
+	}
+}

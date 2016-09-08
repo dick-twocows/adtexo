@@ -1,0 +1,70 @@
+/**
+ * JavaCC template file created by SF JavaCC plugin 1.5.28+ wizard for JavaCC 1.5.0+
+ */options{  static = false;}PARSER_BEGIN(JettyNodeGrammar)package org.twocows.adtexo.node.jetty.grammar;
+
+import java.io.StringReader;
+
+import org.twocows.adtexo.context.Context;
+import org.twocows.adtexo.cli.CLI;
+import org.twocows.adtexo.grammar.Grammar;
+import org.twocows.adtexo.node.Node;
+import org.twocows.adtexo.node.jetty.JettyNode;
+
+public class JettyNodeGrammar implements Grammar{
+	public JettyNodeGrammar() {
+	  this(new StringReader(""));
+	}
+}PARSER_END(JettyNodeGrammar)SKIP :{  " "| "\r"| "\t"| "\n"}
+TOKEN :
+{
+  < ADD : "add" >
+| < CONNECTION : "connection" >
+| < SERVLET : "servlet" >
+}
+
+TOKEN :
+{
+  < INTEGER : ( < DIGIT > )+ >
+| < #DIGIT : [ "0"-"9" ] >
+| < DOUBLE_QUOTED_STRING: "\"" (~["\""])+ "\"" >
+}
+
+Context root() :
+{
+	Context context;
+}
+{
+	(
+		(			context = add()
+		)
+	)
+	{
+		return context;
+	}
+}
+
+Context add() :
+{
+	final Context context = new Context();
+	Token token;
+}
+{
+	< ADD >
+	(		(
+			< CONNECTION >
+			{
+				context.put(Grammar.ROOT_KEY, JettyNode.ADD_CONNECTION_KEY);
+			}
+		)
+		| 
+		(
+			< SERVLET > 
+			{
+				context.put(Grammar.ROOT_KEY, JettyNode.ADD_SERVLET_KEY);
+			}
+		)
+		{
+			return context;
+		}
+	)
+}

@@ -1,0 +1,128 @@
+/**
+ * JavaCC template file created by SF JavaCC plugin 1.5.28+ wizard for JavaCC 1.5.0+
+ */options{  static = false;}PARSER_BEGIN(AdtexoNodeGrammar)package org.twocows.adtexo.node.adtexo.grammar;
+
+import java.io.StringReader;
+
+import org.twocows.adtexo.context.Context;
+import org.twocows.adtexo.cli.CLI;
+import org.twocows.adtexo.grammar.Grammar;
+import org.twocows.adtexo.node.Node;
+import org.twocows.adtexo.node.adtexo.AdtexoNode;
+
+public class AdtexoNodeGrammar implements Grammar{
+	public AdtexoNodeGrammar() {
+	  this(new StringReader(""));
+	}
+}PARSER_END(AdtexoNodeGrammar)SKIP :{  " "| "\r"| "\t"| "\n"}
+TOKEN :
+{
+  < CLASS : "class" >
+| < CREATE : "create" >
+| < ID : "id" >
+| < NODE : "node" >
+| < SHOW : "show" >
+| < START : "start" >
+| < STOP : "stop" >
+}
+
+TOKEN :
+{
+  < INTEGER : ( < DIGIT > )+ >
+| < #DIGIT : [ "0"-"9" ] >
+| < DOUBLE_QUOTED_STRING: "\"" (~["\""])+ "\"" >
+}
+
+Context root() :
+{
+	Context context;
+	Token id, token;
+}
+{
+	(
+		(			context = create()
+		)
+		|
+		(
+			context = show()
+		)
+		|
+		(
+			context = start()
+		)
+		|
+		(
+			context = stop()
+		)
+	)
+	{
+		return context;
+	}
+}
+
+Context create() :
+{
+	final Context context = new Context();
+	Token token;
+}
+{
+	< CREATE >
+	(		< NODE >
+		{
+			context.put(Grammar.ROOT_KEY, AdtexoNode.CREATE_NODE_KEY);
+		}
+		< CLASS > token = < DOUBLE_QUOTED_STRING >  
+		{
+			context.put(Node.CLASS_KEY, token.image.replace("\"", ""));
+		}
+		< ID > token = < DOUBLE_QUOTED_STRING >
+		{
+			context.put(Node.ID_KEY, token.image.replace("\"", ""));
+		}
+		{
+			return context;
+		}
+	)
+}
+
+Context show() :
+{
+	final Context context = new Context();
+}
+{
+	< SHOW >
+	{
+		context.put(Grammar.ROOT_KEY, Node.SHOW_KEY);
+		return context;
+	}
+}
+
+Context start() :
+{
+	final Context context = new Context();
+	Token token;
+}
+{
+	< START >
+	< NODE > token = < DOUBLE_QUOTED_STRING > 
+	{
+		context.put(Grammar.ROOT_KEY, Node.START_KEY);
+		context.put(Node.ID_KEY, token.image.replace("\"", ""));
+		return context;
+	}
+}
+
+Context stop() :
+{
+	final Context context = new Context();
+	Token token;
+}
+{
+	< STOP >
+	< NODE > token = < DOUBLE_QUOTED_STRING > 
+	{
+		context.put(Grammar.ROOT_KEY, Node.STOP_KEY);
+		context.put(Node.ID_KEY, token.image.replace("\"", ""));
+		return context;
+	}
+}
